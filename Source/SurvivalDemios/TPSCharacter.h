@@ -39,12 +39,16 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	class USpringArmComponent* SpringArmCamera;
 
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TSubclassOf<class AWeapon> BP_Rifle;
+
 	UPROPERTY(BlueprintReadOnly, Category = "Jump")
 	bool bIsJumping;
 
 	class UCharacterMovementComponent* CharacterMovement;
 
 	void StartJump();
+
 	void StopJump();
 
 	void CrouchToggle();

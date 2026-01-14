@@ -8,6 +8,9 @@
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Engine/World.h"
+#include "Weapon.h"
+#include "Engine/EngineTypes.h"
 
 // Sets default values
 ATPSCharacter::ATPSCharacter()
@@ -15,9 +18,7 @@ ATPSCharacter::ATPSCharacter()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	SpringArmCamera = CreateDefaultSubobject<USpringArmComponent>(FName("Spring Arm Component"));
-	SpringArmCamera->TargetArmLength = 200.f;
 	SpringArmCamera->bUsePawnControlRotation = true;
-	SpringArmCamera->AddRelativeLocation(FVector(0.f, 40.f, 50.f));
 	SpringArmCamera->SetupAttachment(RootComponent);
 
 	CharacterCamera = CreateDefaultSubobject<UCameraComponent>(FName("CharacterCamera"));
@@ -32,9 +33,13 @@ void ATPSCharacter::PostInitializeComponents()
 
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 
+	SpringArmCamera->TargetArmLength = 300.f;
+	SpringArmCamera->SetRelativeLocation(FVector(0.f, 60.f, 50.f));
+
 	CharacterMovement = GetCharacterMovement();
 	CharacterMovement->JumpZVelocity = 600.f;
 	CharacterMovement->GravityScale = 1.5f;
+	CharacterMovement->SetCrouchedHalfHeight(70.f);
 
 	SpringArmCamera->bEnableCameraLag = true;
 	SpringArmCamera->CameraLagSpeed = 20.f;
@@ -45,6 +50,10 @@ void ATPSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	AWeapon* PlayerWeapon = GetWorld()->SpawnActor<AWeapon>(BP_Rifle, FTransform(), Params);
+	PlayerWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("WeaponSocket"));
 }
 
 void ATPSCharacter::CrouchToggle()
