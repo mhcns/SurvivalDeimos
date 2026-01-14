@@ -37,7 +37,7 @@ void ATPSCharacter::PostInitializeComponents()
 	CharacterMovement->GravityScale = 1.5f;
 
 	SpringArmCamera->bEnableCameraLag = true;
-	SpringArmCamera->CameraLagSpeed = 4.f;
+	SpringArmCamera->CameraLagSpeed = 20.f;
 }
 
 // Called when the game starts or when spawned
