@@ -54,6 +54,7 @@ void ATPSCharacter::BeginPlay()
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	AWeapon* PlayerWeapon = GetWorld()->SpawnActor<AWeapon>(BP_Rifle, FTransform(), Params);
 	PlayerWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("WeaponSocket"));
+	SetWeaponController(PlayerWeapon);
 }
 
 void ATPSCharacter::CrouchToggle()
@@ -88,6 +89,8 @@ void ATPSCharacter::Tick(float DeltaTime)
 void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	CurrentInputComponent = PlayerInputComponent;
 	PlayerInputComponent->BindAxis("MoveForward", this, &ATPSCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("Sidewalk", this, &ATPSCharacter::Sidewalk);
 	PlayerInputComponent->BindAxis("MouseY", this, &ATPSCharacter::VerticalLook);
@@ -101,6 +104,18 @@ void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 	PlayerInputComponent->BindAction("CrouchToggle", IE_Pressed, this, &ATPSCharacter::CrouchToggle);
 }
+
+void ATPSCharacter::SetWeaponController(AWeapon* Weapon)
+{
+	if (!CurrentInputComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Input Component is null"));
+		return;
+	}
+	CurrentWeapon = Weapon;
+	CurrentInputComponent->BindAction("Fire", IE_Pressed, CurrentWeapon, &AWeapon::Fire);
+}
+
 
 void ATPSCharacter::MoveForward(float Value)
 {

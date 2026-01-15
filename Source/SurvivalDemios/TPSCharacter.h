@@ -17,6 +17,9 @@ public:
 
 	virtual void PostInitializeComponents() override;
 
+	//void AddWeaponToInventory(class AWeapon* Weapon);
+	void SetWeaponController(class AWeapon* Weapon);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -56,6 +59,11 @@ protected:
 	void CrouchHold();
 
 	void StandUp();
+
+	AWeapon* CurrentWeapon;
+
+	UPROPERTY()
+	UInputComponent* CurrentInputComponent;
 
 public:
 	// Called every frame
