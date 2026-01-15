@@ -7,17 +7,26 @@
 #include "Engine/EngineTypes.h"
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
+#include "UObject/ConstructorHelpers.h"
+#include "Engine/SkeletalMesh.h"
 
 // Sets default values
 AWeapon::AWeapon()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(FName("Weapon Mesh"));
+	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(FName("WeaponMesh"));
+	ConstructorHelpers::FObjectFinder<USkeletalMesh> WeaponMeshAsset(TEXT("/Script/Engine.SkeletalMesh'/Game/Weapons/Rifle.Rifle'"));
+
+	if (WeaponMeshAsset.Succeeded())
+	{
+		WeaponMesh->SetSkeletalMesh(WeaponMeshAsset.Object);
+	}
+
 	RootComponent = WeaponMesh;
 
 	MuzzleArrow = CreateDefaultSubobject<UArrowComponent>(FName("Muzzle Arrow"));
-	MuzzleArrow->AttachToComponent(WeaponMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, FName("MuzzleFlashSocket"));
+	MuzzleArrow->SetupAttachment(WeaponMesh, FName("MuzzleFlashSocket"));
 	MuzzleArrow->SetRelativeLocation(FVector(-4.f, 0, -1.2f));
 	MuzzleArrow->SetRelativeScale3D(FVector(0.3f, 0.7f, 0.7f));
 
