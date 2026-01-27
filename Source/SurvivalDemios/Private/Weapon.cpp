@@ -11,6 +11,9 @@
 #include "Engine/SkeletalMesh.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Materials/MaterialInterface.h"
+#include "Math/UnrealMathUtility.h"
+#include "Components/AudioComponent.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -18,32 +21,12 @@ AWeapon::AWeapon()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(FName("WeaponMesh"));
+	RootComponent = WeaponMesh;
+
 	MuzzleFlashEffect = CreateDefaultSubobject<UParticleSystemComponent>(FName("MuzzleFlashEffect"));
 	BulletTrail = CreateDefaultSubobject<UParticleSystemComponent>(FName("BulletTrail"));
+	SoundComponent = CreateDefaultSubobject<UAudioComponent>(FName("Sound Component"));
 
-	ConstructorHelpers::FObjectFinder<USkeletalMesh> WeaponMeshAsset(TEXT("/Script/Engine.SkeletalMesh'/Game/Weapons/Rifle.Rifle'"));
-
-	ConstructorHelpers::FObjectFinder<UParticleSystem> MuzzleFlashAsset(TEXT("/Script/Engine.ParticleSystem'/Game/Effects/ParticleSystems/Weapons/AssaultRifle/Muzzle/P_AssaultRifle_MF.P_AssaultRifle_MF'"));
-
-	ConstructorHelpers::FObjectFinder<UParticleSystem> BulletTrailAsset(TEXT("/Script/Engine.ParticleSystem'/Game/Effects/ParticleSystems/Weapons/AssaultRifle/Muzzle/P_AssaultRifle_Trail.P_AssaultRifle_Trail'"));
-
-	ConstructorHelpers::FObjectFinder<UParticleSystem> BulletImpactAsset(TEXT("/Script/Engine.ParticleSystem'/Game/Effects/ParticleSystems/Weapons/AssaultRifle/Impacts/P_AssaultRifle_IH.P_AssaultRifle_IH'"));
-
-	//ConstructorHelpers::FObjectFinder<UParticleSystem> BloodImpactAsset(TEXT(""));
-
-	if (WeaponMeshAsset.Succeeded() && MuzzleFlashAsset.Succeeded() && BulletTrailAsset.Succeeded() && BulletImpactAsset.Succeeded())
-	{
-		WeaponMesh->SetSkeletalMesh(WeaponMeshAsset.Object);
-		MuzzleFlashEffect->SetTemplate(MuzzleFlashAsset.Object);
-		BulletTrail->SetTemplate(BulletTrailAsset.Object);
-		BulletImpactFX = BulletImpactAsset.Object;
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("One or more FObjectFinders failed to retrieve an asset"));
-	}
-
-	RootComponent = WeaponMesh;
 
 	MuzzleArrow = CreateDefaultSubobject<UArrowComponent>(FName("Muzzle Arrow"));
 	MuzzleArrow->SetupAttachment(WeaponMesh, FName("MuzzleFlashSocket"));
@@ -56,6 +39,9 @@ AWeapon::AWeapon()
 
 	BulletTrail->SetupAttachment(MuzzleArrow);
 	BulletTrail->bAutoActivate = false;
+
+	SoundComponent->SetupAttachment(MuzzleArrow);
+	SoundComponent->bAutoActivate = false;
 }
 
 void AWeapon::PostInitializeComponents()
@@ -94,6 +80,12 @@ void AWeapon::Fire()
 		QueryParams.AddIgnoredActor(GetOwner());
 		QueryParams.bTraceComplex = true;
 
+		if (SoundComponent->GetSound() != FireSound)
+		{
+			SoundComponent->SetSound(FireSound);
+		}
+		SoundComponent->Play();
+
 		bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, MuzzleLocation, EndLocation, ECC_Visibility, QueryParams);
 
 		if (bHit)
@@ -121,12 +113,26 @@ void AWeapon::CheckBulletHit(FHitResult HitResult)
 	}
 	else
 	{
-		UParticleSystemComponent* HitFX =
-			UGameplayStatics::SpawnEmitterAtLocation(
-				GetWorld(),
-				BulletImpactFX,
-				HitResult.Location,
-				HitResult.ImpactNormal.Rotation()
-			);
+		UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			BulletImpactFX,
+			HitResult.Location,
+			HitResult.ImpactNormal.Rotation()
+		);
+
+		FVector DecalSize = FVector(FMath::RandRange(10.f, 20.f));
+		UGameplayStatics::SpawnDecalAtLocation(
+			GetWorld(),
+			BulletDecalMaterial,
+			DecalSize,
+			HitResult.Location,
+			HitResult.ImpactNormal.Rotation()
+		);
+
+		UGameplayStatics::PlaySoundAtLocation(
+			GetWorld(),
+			ImpactSound,
+			HitResult.Location
+		);
 	}
 }

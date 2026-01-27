@@ -52,9 +52,9 @@ void ATPSCharacter::BeginPlay()
 
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	AWeapon* PlayerWeapon = GetWorld()->SpawnActor<AWeapon>(BP_Rifle, FTransform(), Params);
-	PlayerWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("WeaponSocket"));
-	SetWeaponController(PlayerWeapon);
+	CurrentWeapon = GetWorld()->SpawnActor<AWeapon>(BP_Rifle, FTransform(), Params);
+	CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("WeaponSocket"));
+	SetWeaponController(CurrentWeapon);
 }
 
 void ATPSCharacter::CrouchToggle()
@@ -109,10 +109,13 @@ void ATPSCharacter::SetWeaponController(AWeapon* Weapon)
 {
 	if (!CurrentInputComponent)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Input Component is null"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Input Component found in Character"));
 		return;
 	}
-	CurrentWeapon = Weapon;
+
+	if (CurrentWeapon && CurrentWeapon != Weapon)
+		CurrentWeapon = Weapon;
+
 	CurrentInputComponent->BindAction("Fire", IE_Pressed, CurrentWeapon, &AWeapon::Fire);
 }
 

@@ -27,17 +27,29 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	class UArrowComponent* MuzzleArrow;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	class UAudioComponent* SoundComponent;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponFX")
 	class UParticleSystemComponent* MuzzleFlashEffect;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponFX")
 	class UParticleSystemComponent* BulletTrail;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WeaponFX")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "WeaponFX")
 	class UParticleSystem* BulletImpactFX;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WeaponFX")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "WeaponFX")
 	class UParticleSystem* BloodImpactFX;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "WeaponFX")
+	class UMaterialInterface* BulletDecalMaterial;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SoundFX")
+	class USoundBase* FireSound;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SoundFX")
+	class USoundBase* ImpactSound;
 
 	void CheckBulletHit(FHitResult HitResult);
 
