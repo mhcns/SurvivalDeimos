@@ -17,6 +17,9 @@ public:
 
 	virtual void PostInitializeComponents() override;
 
+	//void AddWeaponToInventory(class AWeapon* Weapon);
+	void SetWeaponController(class AWeapon* Weapon);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -39,12 +42,16 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	class USpringArmComponent* SpringArmCamera;
 
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TSubclassOf<class AWeapon> BP_Rifle;
+
 	UPROPERTY(BlueprintReadOnly, Category = "Jump")
 	bool bIsJumping;
 
 	class UCharacterMovementComponent* CharacterMovement;
 
 	void StartJump();
+
 	void StopJump();
 
 	void CrouchToggle();
@@ -52,6 +59,11 @@ protected:
 	void CrouchHold();
 
 	void StandUp();
+
+	AWeapon* CurrentWeapon;
+
+	UPROPERTY()
+	UInputComponent* CurrentInputComponent;
 
 public:
 	// Called every frame
