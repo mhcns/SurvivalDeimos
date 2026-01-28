@@ -8,6 +8,9 @@
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Engine/World.h"
+#include "Weapon.h"
+#include "Engine/EngineTypes.h"
 
 // Sets default values
 ATPSCharacter::ATPSCharacter()
@@ -15,9 +18,7 @@ ATPSCharacter::ATPSCharacter()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	SpringArmCamera = CreateDefaultSubobject<USpringArmComponent>(FName("Spring Arm Component"));
-	SpringArmCamera->TargetArmLength = 200.f;
 	SpringArmCamera->bUsePawnControlRotation = true;
-	SpringArmCamera->AddRelativeLocation(FVector(0.f, 40.f, 50.f));
 	SpringArmCamera->SetupAttachment(RootComponent);
 
 	CharacterCamera = CreateDefaultSubobject<UCameraComponent>(FName("CharacterCamera"));
@@ -32,12 +33,16 @@ void ATPSCharacter::PostInitializeComponents()
 
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 
+	SpringArmCamera->TargetArmLength = 300.f;
+	SpringArmCamera->SetRelativeLocation(FVector(0.f, 60.f, 50.f));
+
 	CharacterMovement = GetCharacterMovement();
 	CharacterMovement->JumpZVelocity = 600.f;
 	CharacterMovement->GravityScale = 1.5f;
+	CharacterMovement->SetCrouchedHalfHeight(70.f);
 
 	SpringArmCamera->bEnableCameraLag = true;
-	SpringArmCamera->CameraLagSpeed = 4.f;
+	SpringArmCamera->CameraLagSpeed = 20.f;
 }
 
 // Called when the game starts or when spawned
@@ -45,6 +50,11 @@ void ATPSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	CurrentWeapon = GetWorld()->SpawnActor<AWeapon>(BP_Rifle, FTransform(), Params);
+	CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("WeaponSocket"));
+	SetWeaponController(CurrentWeapon);
 }
 
 void ATPSCharacter::CrouchToggle()
@@ -79,6 +89,8 @@ void ATPSCharacter::Tick(float DeltaTime)
 void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	CurrentInputComponent = PlayerInputComponent;
 	PlayerInputComponent->BindAxis("MoveForward", this, &ATPSCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("Sidewalk", this, &ATPSCharacter::Sidewalk);
 	PlayerInputComponent->BindAxis("MouseY", this, &ATPSCharacter::VerticalLook);
@@ -92,6 +104,21 @@ void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 	PlayerInputComponent->BindAction("CrouchToggle", IE_Pressed, this, &ATPSCharacter::CrouchToggle);
 }
+
+void ATPSCharacter::SetWeaponController(AWeapon* Weapon)
+{
+	if (!CurrentInputComponent)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Input Component found in Character"));
+		return;
+	}
+
+	if (CurrentWeapon && CurrentWeapon != Weapon)
+		CurrentWeapon = Weapon;
+
+	CurrentInputComponent->BindAction("Fire", IE_Pressed, CurrentWeapon, &AWeapon::Fire);
+}
+
 
 void ATPSCharacter::MoveForward(float Value)
 {
