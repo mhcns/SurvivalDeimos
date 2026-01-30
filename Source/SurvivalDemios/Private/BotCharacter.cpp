@@ -2,11 +2,14 @@
 
 
 #include "BotCharacter.h"
+#include "Engine/World.h"
+#include "Weapon.h"
+#include "Engine/EngineTypes.h"
 
 // Sets default values
 ABotCharacter::ABotCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 }
@@ -15,7 +18,11 @@ ABotCharacter::ABotCharacter()
 void ABotCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	CurrentWeapon = GetWorld()->SpawnActor<AWeapon>(BP_Rifle, FTransform(), Params);
+	CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("WeaponSocket"));
 }
 
 // Called every frame

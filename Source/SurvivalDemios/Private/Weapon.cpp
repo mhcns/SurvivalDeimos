@@ -107,9 +107,17 @@ void AWeapon::Fire()
 
 void AWeapon::CheckBulletHit(FHitResult HitResult)
 {
-	if (HitResult.GetActor()->Tags.Contains(TEXT("Enemy")))
+	if (HitResult.GetActor()->Tags.Contains(TEXT("Character")))
 	{
 		// Spawn blood effect;
+		UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			BloodImpactFX,
+			HitResult.Location,
+			HitResult.ImpactNormal.Rotation()
+		);
+
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, TEXT("Hit Character"));
 	}
 	else
 	{
