@@ -9,6 +9,7 @@
 #include "GameFramework/Pawn.h"
 #include "BotCharacter.h"
 #include "Engine/Engine.h"
+#include "Weapon.h"
 
 ABotAIController::ABotAIController()
 {
@@ -43,5 +44,7 @@ void ABotAIController::OnSeePawn(APawn* SeenPawn)
 		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, TEXT("Seen pawn"));
 		BlackboardComp->SetValueAsObject("Enemy", SeenPawn);
 		BlackboardComp->SetValueAsBool("ShouldPatrol", false);
+		ABotCharacter* Bot = Cast<ABotCharacter>(GetPawn());
+		Bot->CurrentWeapon->Fire();
 	}
 }

@@ -19,6 +19,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	float Health = 100.f;
+
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 	TSubclassOf<class AWeapon> BP_Rifle;
 
@@ -31,4 +33,11 @@ public:
 
 	class AWeapon* CurrentWeapon;
 
+	virtual float TakeDamage(
+		float DamageAmount,
+		FDamageEvent const& DamageEvent,
+		AController* EventInstigator,
+		AActor* DamageCauser) override;
+
+	float GetHealth() const { return Health; }
 };

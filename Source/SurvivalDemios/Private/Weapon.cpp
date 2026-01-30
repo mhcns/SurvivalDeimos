@@ -117,7 +117,16 @@ void AWeapon::CheckBulletHit(FHitResult HitResult)
 			HitResult.ImpactNormal.Rotation()
 		);
 
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, TEXT("Hit Character"));
+		if (HitResult.GetActor()->Tags.Contains(TEXT("Enemy")))
+		{
+			UGameplayStatics::ApplyDamage(
+				HitResult.GetActor(),
+				20.f,
+				GetInstigatorController(),
+				this,
+				nullptr
+			);
+		}
 	}
 	else
 	{

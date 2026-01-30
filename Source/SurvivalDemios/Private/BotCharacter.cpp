@@ -39,3 +39,17 @@ void ABotCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 }
 
+float ABotCharacter::TakeDamage(
+	float DamageAmount,
+	FDamageEvent const& DamageEvent,
+	AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	Health -= ActualDamage;
+	if (Health <= 0.f)
+	{
+		Destroy();
+	}
+	return ActualDamage;
+}

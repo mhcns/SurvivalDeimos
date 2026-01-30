@@ -152,3 +152,18 @@ void ATPSCharacter::StopJump()
 	StopJumping();
 }
 
+float ATPSCharacter::TakeDamage(
+	float DamageAmount,
+	FDamageEvent const& DamageEvent,
+	AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	Health -= ActualDamage;
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, FString::Printf(TEXT("Health: %f"), Health));
+	if (Health <= 0.f)
+	{
+		Destroy();
+	}
+	return ActualDamage;
+}
