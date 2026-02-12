@@ -24,6 +24,12 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 	TSubclassOf<class AWeapon> BP_Rifle;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Health")
+	bool bIsDead;
+
+	UFUNCTION()
+	void Death();
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -40,4 +46,7 @@ public:
 		AActor* DamageCauser) override;
 
 	float GetHealth() const { return Health; }
+
+	UFUNCTION()
+	bool GetIsDead() const { return bIsDead; }
 };

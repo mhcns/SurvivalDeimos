@@ -50,6 +50,9 @@ protected:
 
 	class UCharacterMovementComponent* CharacterMovement;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Health")
+	bool bIsDead;
+
 	void StartJump();
 
 	void StopJump();
@@ -60,6 +63,9 @@ protected:
 
 	void StandUp();
 
+	void Death();
+
+	UPROPERTY(EditDefaultsOnly, Category = "Health")
 	float Health = 100.f;
 
 	AWeapon* CurrentWeapon;
@@ -85,4 +91,7 @@ public:
 		AActor* DamageCauser) override;
 
 	float GetHealth() const { return Health; }
+
+	UFUNCTION()
+	bool GetIsDead() const { return bIsDead; }
 };

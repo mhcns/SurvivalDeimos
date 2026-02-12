@@ -10,6 +10,7 @@
 #include "BotCharacter.h"
 #include "Engine/Engine.h"
 #include "Weapon.h"
+#include "TPSCharacter.h"
 
 ABotAIController::ABotAIController()
 {
@@ -28,6 +29,7 @@ void ABotAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &ABotAIController::OnSeePawn);
+	Bot = Cast<ABotCharacter>(GetPawn());
 
 	if (BotBehaviorTree)
 	{
@@ -39,12 +41,20 @@ void ABotAIController::OnPossess(APawn* InPawn)
 
 void ABotAIController::OnSeePawn(APawn* SeenPawn)
 {
-	if (BlackboardComp && SeenPawn)
+	if (BlackboardComp)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, TEXT("Seen pawn"));
-		BlackboardComp->SetValueAsObject("Enemy", SeenPawn);
-		BlackboardComp->SetValueAsBool("ShouldPatrol", false);
-		ABotCharacter* Bot = Cast<ABotCharacter>(GetPawn());
-		Bot->CurrentWeapon->Fire();
+		class ATPSCharacter* PlayerCharacter = Cast<ATPSCharacter>(SeenPawn);
+		if (Bot->GetIsDead() || (PlayerCharacter && PlayerCharacter->GetIsDead()))
+		{
+			BehaviorTreeComp->StopTree();
+		}
+		else if (SeenPawn)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, TEXT("Seen pawn"));
+			BlackboardComp->SetValueAsObject("Enemy", SeenPawn);
+			BlackboardComp->SetValueAsBool("ShouldPatrol", false);
+			Bot->CurrentWeapon->Fire();
+		}
+		// else insert start patrol logic
 	}
 }

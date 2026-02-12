@@ -117,16 +117,13 @@ void AWeapon::CheckBulletHit(FHitResult HitResult)
 			HitResult.ImpactNormal.Rotation()
 		);
 
-		if (HitResult.GetActor()->Tags.Contains(TEXT("Enemy")))
-		{
-			UGameplayStatics::ApplyDamage(
-				HitResult.GetActor(),
-				20.f,
-				GetInstigatorController(),
-				this,
-				nullptr
-			);
-		}
+		UGameplayStatics::ApplyDamage(
+			HitResult.GetActor(),
+			20.f,
+			GetInstigatorController(),
+			this,
+			nullptr
+		);
 	}
 	else
 	{

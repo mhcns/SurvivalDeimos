@@ -33,4 +33,6 @@ protected:
 
 	UFUNCTION()
 	void OnSeePawn(class APawn* SeenPawn);
+
+	class ABotCharacter* Bot;
 };

@@ -5,6 +5,8 @@
 #include "Engine/World.h"
 #include "Weapon.h"
 #include "Engine/EngineTypes.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values
 ABotCharacter::ABotCharacter()
@@ -49,7 +51,17 @@ float ABotCharacter::TakeDamage(
 	Health -= ActualDamage;
 	if (Health <= 0.f)
 	{
-		Destroy();
+		Death();
 	}
 	return ActualDamage;
+}
+
+void ABotCharacter::Death()
+{
+	UCapsuleComponent* Capsule = GetCapsuleComponent();
+	if (Capsule)
+		Capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Health = 0.f;
+	bIsDead = true;
+	//Destroy();
 }
