@@ -50,6 +50,9 @@ protected:
 
 	class UCharacterMovementComponent* CharacterMovement;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Health")
+	bool bIsDead;
+
 	void StartJump();
 
 	void StopJump();
@@ -59,6 +62,11 @@ protected:
 	void CrouchHold();
 
 	void StandUp();
+
+	void Death();
+
+	UPROPERTY(EditDefaultsOnly, Category = "Health")
+	float Health = 100.f;
 
 	AWeapon* CurrentWeapon;
 
@@ -75,4 +83,15 @@ public:
 	void OnComponentHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 	void OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	virtual float TakeDamage(
+		float DamageAmount,
+		FDamageEvent const& DamageEvent,
+		AController* EventInstigator,
+		AActor* DamageCauser) override;
+
+	float GetHealth() const { return Health; }
+
+	UFUNCTION()
+	bool GetIsDead() const { return bIsDead; }
 };

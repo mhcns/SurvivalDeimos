@@ -152,3 +152,38 @@ void ATPSCharacter::StopJump()
 	StopJumping();
 }
 
+float ATPSCharacter::TakeDamage(
+	float DamageAmount,
+	FDamageEvent const& DamageEvent,
+	AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	Health -= ActualDamage;
+	if (Health <= 0.f)
+	{
+		Death();
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, FString::Printf(TEXT("Health: %f"), Health));
+	return ActualDamage;
+}
+
+void ATPSCharacter::Death()
+{
+	Health = 0.f;
+	bIsDead = true;
+	bUseControllerRotationYaw = false;
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	check(PlayerController);
+
+	if (PlayerController)
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, FString::Printf(TEXT("Got Controller - ")) + PlayerController->GetPawn()->GetName());
+
+	if (IsLocallyControlled())
+	{
+		GetCharacterMovement()->DisableMovement();
+		//DisableInput(PlayerController);
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, FString::Printf(TEXT("Disabled it (in theory)")));
+	}
+	//Destroy();
+}
