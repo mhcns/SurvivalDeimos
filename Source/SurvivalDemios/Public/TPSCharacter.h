@@ -65,7 +65,7 @@ protected:
 
 	void Death();
 
-	UPROPERTY(EditDefaultsOnly, Category = "Health")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Health")
 	float Health = 100.f;
 
 	AWeapon* CurrentWeapon;
@@ -90,6 +90,7 @@ public:
 		AController* EventInstigator,
 		AActor* DamageCauser) override;
 
+	UFUNCTION()
 	float GetHealth() const { return Health; }
 
 	UFUNCTION()
