@@ -7,12 +7,17 @@
 #include "Engine/EngineTypes.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Abilities/GameplayAbility.h"
+#include "GA_Shoot.h"
 
 // Sets default values
 ABotCharacter::ABotCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	AbilitySystem = CreateDefaultSubobject<UAbilitySystemComponent>(FName("Ability System Component"));
+	AttributeSet = CreateDefaultSubobject<UCharacterAttributeSet>(FName("Attribute Set"));
 
 }
 
@@ -21,10 +26,23 @@ void ABotCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (AbilitySystem)
+	{
+		AbilitySystem->InitAbilityActorInfo(this, this);
+	}
+
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	CurrentWeapon = GetWorld()->SpawnActor<AWeapon>(BP_Rifle, FTransform(), Params);
 	CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("WeaponSocket"));
+
+	FGameplayAbilitySpec Spec(UGA_Shoot::StaticClass(), 1, 0, CurrentWeapon);
+	if (AbilitySystem && HasAuthority())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Giving ability to weapon"));
+		CurrentWeapon->SetOwnerAbilitySystem(AbilitySystem);
+		AbilitySystem->GiveAbility(Spec);
+	}
 }
 
 // Called every frame

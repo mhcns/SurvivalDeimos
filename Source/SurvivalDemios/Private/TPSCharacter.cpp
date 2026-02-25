@@ -11,6 +11,7 @@
 #include "Engine/World.h"
 #include "Weapon.h"
 #include "Engine/EngineTypes.h"
+#include "GA_Shoot.h"
 
 // Sets default values
 ATPSCharacter::ATPSCharacter()
@@ -23,6 +24,9 @@ ATPSCharacter::ATPSCharacter()
 
 	CharacterCamera = CreateDefaultSubobject<UCameraComponent>(FName("CharacterCamera"));
 	CharacterCamera->SetupAttachment(SpringArmCamera);
+
+	AbilitySystem = CreateDefaultSubobject<UAbilitySystemComponent>(FName("Ability System"));
+	AttributeSet = CreateDefaultSubobject<UCharacterAttributeSet>(FName("Attribute Set"));
 
 	AutoPossessPlayer = EAutoReceiveInput::Player0; // change it in case of multiplayer
 }
@@ -50,6 +54,10 @@ void ATPSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (AbilitySystem)
+	{
+		AbilitySystem->InitAbilityActorInfo(this, this);
+	}
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	CurrentWeapon = GetWorld()->SpawnActor<AWeapon>(BP_Rifle, FTransform(), Params);
@@ -116,6 +124,13 @@ void ATPSCharacter::SetWeaponController(AWeapon* Weapon)
 	if (CurrentWeapon && CurrentWeapon != Weapon)
 		CurrentWeapon = Weapon;
 
+	FGameplayAbilitySpec Spec(UGA_Shoot::StaticClass(), 1, 0, Weapon);
+	if (AbilitySystem && HasAuthority())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Giving ability to weapon"));
+		Weapon->SetOwnerAbilitySystem(AbilitySystem);
+		AbilitySystem->GiveAbility(Spec);
+	}
 	CurrentInputComponent->BindAction("Fire", IE_Pressed, CurrentWeapon, &AWeapon::Fire);
 }
 

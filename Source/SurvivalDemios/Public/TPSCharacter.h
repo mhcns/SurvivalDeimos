@@ -3,11 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemComponent.h"
+#include "AttributeSet.h"
+#include "CharacterAttributeSet.h"
+#include "AbilitySystemInterface.h"
 #include "GameFramework/Character.h"
 #include "TPSCharacter.generated.h"
 
 UCLASS()
-class SURVIVALDEMIOS_API ATPSCharacter : public ACharacter
+class SURVIVALDEMIOS_API ATPSCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -16,6 +20,9 @@ public:
 	ATPSCharacter();
 
 	virtual void PostInitializeComponents() override;
+
+	// IAbilitySystemInterface implementation
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override { return AbilitySystem; }
 
 	//void AddWeaponToInventory(class AWeapon* Weapon);
 	void SetWeaponController(class AWeapon* Weapon);
@@ -72,6 +79,12 @@ protected:
 
 	UPROPERTY()
 	UInputComponent* CurrentInputComponent;
+
+	UPROPERTY()
+	UAbilitySystemComponent* AbilitySystem;
+
+	UPROPERTY()
+	UCharacterAttributeSet* AttributeSet;
 
 public:
 	// Called every frame

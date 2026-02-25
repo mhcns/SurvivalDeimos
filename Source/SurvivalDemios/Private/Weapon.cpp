@@ -14,6 +14,7 @@
 #include "Materials/MaterialInterface.h"
 #include "Math/UnrealMathUtility.h"
 #include "Components/AudioComponent.h"
+#include "GA_Shoot.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -27,6 +28,7 @@ AWeapon::AWeapon()
 	BulletTrail = CreateDefaultSubobject<UParticleSystemComponent>(FName("BulletTrail"));
 	SoundComponent = CreateDefaultSubobject<UAudioComponent>(FName("Sound Component"));
 
+	AttributeSet = CreateDefaultSubobject<UWeaponAttributeSet>(FName("Attribute Set"));
 
 	MuzzleArrow = CreateDefaultSubobject<UArrowComponent>(FName("Muzzle Arrow"));
 	MuzzleArrow->SetupAttachment(WeaponMesh, FName("MuzzleFlashSocket"));
@@ -66,87 +68,9 @@ void AWeapon::Tick(float DeltaTime)
 
 void AWeapon::Fire()
 {
-	if (MuzzleArrow)
+	if (OwnerAbilitySystem && HasAuthority())
 	{
-		FVector MuzzleLocation = MuzzleArrow->GetComponentLocation();
-		FRotator MuzzleRotator = MuzzleArrow->GetComponentRotation();
-		FVector MuzzleDirection = MuzzleRotator.Vector();
-		FVector EndLocation = MuzzleLocation + (MuzzleDirection * 1000.f);
-		float Distance = 1000.f;
-
-		FHitResult HitResult;
-		FCollisionQueryParams QueryParams;
-		QueryParams.AddIgnoredActor(this);
-		QueryParams.AddIgnoredActor(GetOwner());
-		QueryParams.bTraceComplex = true;
-
-		if (SoundComponent->GetSound() != FireSound)
-		{
-			SoundComponent->SetSound(FireSound);
-		}
-		SoundComponent->Play();
-
-		bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, MuzzleLocation, EndLocation, ECC_Visibility, QueryParams);
-
-		if (bHit)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Hit"));
-			EndLocation = HitResult.Location;
-			Distance = HitResult.Distance;
-			CheckBulletHit(HitResult);
-		}
-
-		MuzzleFlashEffect->ActivateSystem();
-		BulletTrail->SetVectorParameter("ShockBeamEnd", EndLocation);
-		//Trail->SetFloatParameter("BeamLength", Distance);
-		BulletTrail->ActivateSystem(); // depois fazer o tiro sair na mira da câmera
-
-		//DrawDebugLine(GetWorld(), MuzzleLocation, EndLocation, FColor::Green, false, 1.f, 0, 1.f);
-	}
-}
-
-void AWeapon::CheckBulletHit(FHitResult HitResult)
-{
-	if (HitResult.GetActor()->Tags.Contains(TEXT("Character")))
-	{
-		// Spawn blood effect;
-		UGameplayStatics::SpawnEmitterAtLocation(
-			GetWorld(),
-			BloodImpactFX,
-			HitResult.Location,
-			HitResult.ImpactNormal.Rotation()
-		);
-
-		UGameplayStatics::ApplyDamage(
-			HitResult.GetActor(),
-			20.f,
-			GetInstigatorController(),
-			this,
-			nullptr
-		);
-	}
-	else
-	{
-		UGameplayStatics::SpawnEmitterAtLocation(
-			GetWorld(),
-			BulletImpactFX,
-			HitResult.Location,
-			HitResult.ImpactNormal.Rotation()
-		);
-
-		FVector DecalSize = FVector(FMath::RandRange(10.f, 20.f));
-		UGameplayStatics::SpawnDecalAtLocation(
-			GetWorld(),
-			BulletDecalMaterial,
-			DecalSize,
-			HitResult.Location,
-			HitResult.ImpactNormal.Rotation()
-		);
-
-		UGameplayStatics::PlaySoundAtLocation(
-			GetWorld(),
-			ImpactSound,
-			HitResult.Location
-		);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Fire"));
+		OwnerAbilitySystem->TryActivateAbilityByClass(UGA_Shoot::StaticClass());
 	}
 }
